@@ -59,7 +59,6 @@ var Dice = /** @class */ (function () {
     Dice.prototype.evalExpress = function () {
         var match = this._diceExpr.match(/(\d+)?d(\d+)/);
         this._rolls = (typeof match[1] == 'undefined') ? 1 : parseInt(match[1]);
-        console.log(this.rolls);
         this._dieSize = parseInt(match[2]);
         this.rollDice();
     };
@@ -67,22 +66,21 @@ var Dice = /** @class */ (function () {
         var i = 0;
         this._rollResults = [];
         for (i = 0; i < this._rolls; i++) {
-            this._rollResults[i] = Math.randomInt(1, this._dieSize);
+            this._rollResults[i] = Math.randomInt(0, this._dieSize) + 1;
         }
     };
     Dice.prototype.operate = function () {
         /*
          * operations
          * k = keep
-         * rr = reroll
-         * ro = reroll once
+         * r = reroll
          * e = explode
-         * eo = explode once
          * mi = min
          * ma = max
          *
          */
         this.keep();
+        this.reroll();
     };
     //  evalFunction(dieSpec:string) {
     //    var match = /^(\d+)?d(\d+)(kh|kl)?(\d+)?([*\/]\d+)?(\d+)?([+-]\d+)?$/.exec    (dieSpec);
@@ -97,7 +95,7 @@ var Dice = /** @class */ (function () {
     //
     //  }
     Dice.prototype.keep = function () {
-        var match = this._diceExpr.match(/(\d+)?d(\d+)(kh|kl)(\d+)/);
+        var match = this._diceExpr.match(/(\d+)?d(\d+)(kh|kl)(\d+)?/);
         if (!match) {
             //      console.log("Does not use keep operation.");
         }
@@ -121,6 +119,20 @@ var Dice = /** @class */ (function () {
             }
         }
     };
+    Dice.prototype.reroll = function () {
+        var match = this._diceExpr.match(/(\d+)?d(\d+)(r)(\d+)?/);
+        if (!match) {
+            //      console.log("Does not use keep operation.");
+        }
+        else {
+            var rerollValue = (typeof match[4] == 'undefined') ? 1 : parseInt(match[4]);
+            //      console.log(match);
+            // write function that checks if there is a matching roll and replace it with a new roll
+            if (this._rollResults.includes(rerollValue)) {
+                this._rollResults = doReroll(this._dieSize, rerollValue, this._rollResults);
+            }
+        }
+    };
     return Dice;
 }());
 function removeLargest(arr) {
@@ -133,5 +145,16 @@ function removeSmallest(arr) {
     var idx = arr.indexOf(smallest);
     return arr.filter(function (_, i) { return i !== idx; });
 }
-var diceRolled = new Dice('3d20kh2');
+function doReroll(dieSize, check, arr) {
+    console.log("old rolls: ");
+    console.log(arr);
+    console.log("rerolling...");
+    console.log("new roll results: ");
+    var idx = arr.indexOf(check);
+    var newRoll = Math.randomInt(0, dieSize) + 1;
+    arr[idx] = newRoll;
+    return arr;
+}
+var diceRolled = new Dice('3d20r');
 console.log(diceRolled.rollResult);
+console.log("");
