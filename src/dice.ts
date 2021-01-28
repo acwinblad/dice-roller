@@ -135,8 +135,11 @@ class Dice {
     }
     if(this._rollResults.includes(this._dieSize)) {
       console.log("CAUTION: Dice Exploding")
-      var idx:number = this._rollResults.indexOf(this._dieSize);
-      this._rollResults.push( Math.randomInt(0,this._dieSize)+1 );
+      var idx:number[] = getAllIndexes(this._rollResults, this._dieSize);
+      var i:number = 0;
+      for( i=0; i< idx.length; i++) {
+        this._rollResults.push( Math.randomInt(0,this._dieSize)+1 );
+      }
     }
 
   }
@@ -167,6 +170,16 @@ function doReroll(dieSize:number, check:number, arr:number[]) {
   return arr;
 }
 
-var diceRolled = new Dice('2d6e');
+function getAllIndexes(arr, val) {
+    var indexes = [], i = -1;
+    while ((i = arr.indexOf(val, i+1)) != -1){
+        indexes.push(i);
+    }
+    return indexes;
+}
+
+
+
+var diceRolled = new Dice('4d6e');
 console.log(diceRolled.rollResult);
 console.log("");
