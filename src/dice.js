@@ -75,12 +75,10 @@ var Dice = /** @class */ (function () {
          * k = keep
          * r = reroll
          * e = explode
-         * mi = min
-         * ma = max
-         *
          */
         this.keep();
         this.reroll();
+        this.explode();
     };
     //  evalFunction(dieSpec:string) {
     //    var match = /^(\d+)?d(\d+)(kh|kl)?(\d+)?([*\/]\d+)?(\d+)?([+-]\d+)?$/.exec    (dieSpec);
@@ -133,6 +131,17 @@ var Dice = /** @class */ (function () {
             }
         }
     };
+    Dice.prototype.explode = function () {
+        var match = this._diceExpr.match(/(\d+)?d(\d+)(e)/);
+        if (!match) {
+            //      console.log("Does not use keep operation.");
+        }
+        if (this._rollResults.includes(this._dieSize)) {
+            console.log("CAUTION: Dice Exploding");
+            var idx = this._rollResults.indexOf(this._dieSize);
+            this._rollResults.push(Math.randomInt(0, this._dieSize) + 1);
+        }
+    };
     return Dice;
 }());
 function removeLargest(arr) {
@@ -155,6 +164,6 @@ function doReroll(dieSize, check, arr) {
     arr[idx] = newRoll;
     return arr;
 }
-var diceRolled = new Dice('3d20r');
+var diceRolled = new Dice('2d6e');
 console.log(diceRolled.rollResult);
 console.log("");

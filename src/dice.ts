@@ -65,14 +65,10 @@ class Dice {
      * k = keep
      * r = reroll
      * e = explode
-     * mi = min
-     * ma = max
-     *
      */
     this.keep()
     this.reroll()
-
-
+    this.explode()
   }
 
 //  evalFunction(dieSpec:string) {
@@ -127,9 +123,22 @@ class Dice {
 //      console.log(match);
       // write function that checks if there is a matching roll and replace it with a new roll
       if(this._rollResults.includes(rerollValue)) {
-        this._rollResults = doReroll(this._dieSize, rerollValue, this._rollResults)
+        this._rollResults = doReroll(this._dieSize, rerollValue, this._rollResults);
       }
     }
+  }
+
+  explode() {
+    var match = this._diceExpr.match(/(\d+)?d(\d+)(e)/);
+    if(!match){
+//      console.log("Does not use keep operation.");
+    }
+    if(this._rollResults.includes(this._dieSize)) {
+      console.log("CAUTION: Dice Exploding")
+      var idx:number = this._rollResults.indexOf(this._dieSize);
+      this._rollResults.push( Math.randomInt(0,this._dieSize)+1 );
+    }
+
   }
 
 }
@@ -158,6 +167,6 @@ function doReroll(dieSize:number, check:number, arr:number[]) {
   return arr;
 }
 
-var diceRolled = new Dice('3d20r');
+var diceRolled = new Dice('2d6e');
 console.log(diceRolled.rollResult);
 console.log("");
