@@ -142,6 +142,9 @@ var Dice = /** @class */ (function () {
             var i = 0;
             for (i = 0; i < idx.length; i++) {
                 this._rollResults.push(Math.randomInt(0, this._dieSize) + 1);
+                while (this._rollResults[this._rollResults.length - 1] == this._dieSize) {
+                    this._rollResults.push(Math.randomInt(0, this._dieSize) + 1);
+                }
             }
         }
     };
@@ -174,6 +177,6 @@ function getAllIndexes(arr, val) {
     }
     return indexes;
 }
-var diceRolled = new Dice('4d6e');
+var diceRolled = new Dice('4d4e');
 console.log(diceRolled.rollResult);
 console.log("");
