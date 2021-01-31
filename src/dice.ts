@@ -40,9 +40,9 @@ class Dice {
 
   constructor(diceExpr: string) {
     this._diceExpr = diceExpr;
-
     this.evalExpress();
     this.operate();
+    this.evalFunction();
   }
 
   evalExpress() {
@@ -71,18 +71,6 @@ class Dice {
     this.explode()
   }
 
-//  evalFunction(dieSpec:string) {
-//    var match = /^(\d+)?d(\d+)(kh|kl)?(\d+)?([*\/]\d+)?(\d+)?([+-]\d+)?$/.exec    (dieSpec);
-//    if(!match) {
-//      throw "Invalid dice notation: " + dieSpec;
-//    }
-//    this._rolls = (typeof match[1] == 'undefined') ? 1 : parseInt(match[1]);
-//    console.log(this._rolls);
-//    this._dieSize = parseInt(match[2]);
-//    this._modifier = (typeof match[3] == 'undefined') ? 1 : parseInt(match[3]);
-//    this._multiplier = (typeof match[4] == 'undefined') ? 0 : parseInt(match[4]);
-//
-//  }
 
   keep() {
     var match = this._diceExpr.match(/(\d+)?d(\d+)(kh|kl)(\d+)?/);
@@ -98,9 +86,7 @@ class Dice {
         var i:number = 0;
         for( i=0; i<this._rolls-keepValue; i++) {
           this._rollResults = removeSmallest(this._rollResults);
-
         }
-
       }
       else /* keep lowest */ {
         console.log('keep lowest ' + keepValue);
@@ -108,7 +94,6 @@ class Dice {
         for( i=0; i< this._rolls-keepValue; i++) {
           this._rollResults = removeLargest(this._rollResults);
         }
-
       }
     }
   }
@@ -116,11 +101,10 @@ class Dice {
   reroll() {
     var match = this._diceExpr.match(/(\d+)?d(\d+)(r)(\d+)?/);
     if(!match){
-//      console.log("Does not use keep operation.");
+//      console.log("Does not use reroll operation.");
     }
     else{
       var rerollValue:number = (typeof match[4] == 'undefined') ? 1 : parseInt(match[4]);
-//      console.log(match);
       // write function that checks if there is a matching roll and replace it with a new roll
       if(this._rollResults.includes(rerollValue)) {
         this._rollResults = doReroll(this._dieSize, rerollValue, this._rollResults);
@@ -131,20 +115,35 @@ class Dice {
   explode() {
     var match = this._diceExpr.match(/(\d+)?d(\d+)(e)/);
     if(!match){
-//      console.log("Does not use keep operation.");
+//      console.log("Does not use explode operation.");
     }
-    if(this._rollResults.includes(this._dieSize)) {
-      console.log("CAUTION: Dice Exploding")
-      var idx:number[] = getAllIndexes(this._rollResults, this._dieSize);
-      var i:number = 0;
-      for( i=0; i< idx.length; i++) {
-        this._rollResults.push( Math.randomInt(0,this._dieSize)+1 );
-        while(this._rollResults[this._rollResults.length-1] == this._dieSize) {
+    if(match != null) {
+      if(this._rollResults.includes(this._dieSize)) {
+        console.log("CAUTION: Dice Exploding")
+        var idx:number[] = getAllIndexes(this._rollResults, this._dieSize);
+        var i:number = 0;
+        for( i=0; i< idx.length; i++) {
           this._rollResults.push( Math.randomInt(0,this._dieSize)+1 );
+          while(this._rollResults[this._rollResults.length-1] == this._dieSize) {
+            this._rollResults.push( Math.randomInt(0,this._dieSize)+1 );
+          }
         }
       }
     }
+  }
 
+  evalFunction() {
+    var match = this._diceExpr.match(/^(\d+)?d(\d+)(kh|kl|r|e)?(\d+)?([*\/])?(\d+)?([+-])?(\d+)?$/)
+    if(!match) {
+      throw "Invalid dice notation: " + this._diceExpr;
+    }
+    var multdivide = (typeof match[5] == 'undefined') ? '*' : match[5];
+    this._multiplier = (typeof match[6] == 'undefined') ? 1 : parseInt(match[6]);
+    var addminus = (typeof match[7] == 'undefined') ? '+' : match[7];
+    this._modifier = (typeof match[8] == 'undefined') ? 0 : parseInt(match[8]);
+    this._finalResult = this._rollResults.reduce((a,b) => a+b, 0);
+    this._finalResult = eval(this._finalResult + multdivide + this._multiplier);
+    this._finalResult = eval(this._finalResult + addminus + this._modifier);
   }
 
 }
@@ -183,6 +182,9 @@ function getAllIndexes(arr, val) {
 
 
 
-var diceRolled = new Dice('4d4e');
+
+var diceRolled = new Dice('4d6kh3');
 console.log(diceRolled.rollResult);
+console.log(diceRolled.finalResult);
 console.log("");
+

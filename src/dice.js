@@ -6,6 +6,7 @@ var Dice = /** @class */ (function () {
         this._diceExpr = diceExpr;
         this.evalExpress();
         this.operate();
+        this.evalFunction();
     }
     Object.defineProperty(Dice.prototype, "diceSpec", {
         get: function () {
@@ -80,18 +81,6 @@ var Dice = /** @class */ (function () {
         this.reroll();
         this.explode();
     };
-    //  evalFunction(dieSpec:string) {
-    //    var match = /^(\d+)?d(\d+)(kh|kl)?(\d+)?([*\/]\d+)?(\d+)?([+-]\d+)?$/.exec    (dieSpec);
-    //    if(!match) {
-    //      throw "Invalid dice notation: " + dieSpec;
-    //    }
-    //    this._rolls = (typeof match[1] == 'undefined') ? 1 : parseInt(match[1]);
-    //    console.log(this._rolls);
-    //    this._dieSize = parseInt(match[2]);
-    //    this._modifier = (typeof match[3] == 'undefined') ? 1 : parseInt(match[3]);
-    //    this._multiplier = (typeof match[4] == 'undefined') ? 0 : parseInt(match[4]);
-    //
-    //  }
     Dice.prototype.keep = function () {
         var match = this._diceExpr.match(/(\d+)?d(\d+)(kh|kl)(\d+)?/);
         if (!match) {
@@ -120,11 +109,10 @@ var Dice = /** @class */ (function () {
     Dice.prototype.reroll = function () {
         var match = this._diceExpr.match(/(\d+)?d(\d+)(r)(\d+)?/);
         if (!match) {
-            //      console.log("Does not use keep operation.");
+            //      console.log("Does not use reroll operation.");
         }
         else {
             var rerollValue = (typeof match[4] == 'undefined') ? 1 : parseInt(match[4]);
-            //      console.log(match);
             // write function that checks if there is a matching roll and replace it with a new roll
             if (this._rollResults.includes(rerollValue)) {
                 this._rollResults = doReroll(this._dieSize, rerollValue, this._rollResults);
@@ -134,19 +122,34 @@ var Dice = /** @class */ (function () {
     Dice.prototype.explode = function () {
         var match = this._diceExpr.match(/(\d+)?d(\d+)(e)/);
         if (!match) {
-            //      console.log("Does not use keep operation.");
+            //      console.log("Does not use explode operation.");
         }
-        if (this._rollResults.includes(this._dieSize)) {
-            console.log("CAUTION: Dice Exploding");
-            var idx = getAllIndexes(this._rollResults, this._dieSize);
-            var i = 0;
-            for (i = 0; i < idx.length; i++) {
-                this._rollResults.push(Math.randomInt(0, this._dieSize) + 1);
-                while (this._rollResults[this._rollResults.length - 1] == this._dieSize) {
+        if (match != null) {
+            if (this._rollResults.includes(this._dieSize)) {
+                console.log("CAUTION: Dice Exploding");
+                var idx = getAllIndexes(this._rollResults, this._dieSize);
+                var i = 0;
+                for (i = 0; i < idx.length; i++) {
                     this._rollResults.push(Math.randomInt(0, this._dieSize) + 1);
+                    while (this._rollResults[this._rollResults.length - 1] == this._dieSize) {
+                        this._rollResults.push(Math.randomInt(0, this._dieSize) + 1);
+                    }
                 }
             }
         }
+    };
+    Dice.prototype.evalFunction = function () {
+        var match = this._diceExpr.match(/^(\d+)?d(\d+)(kh|kl|r|e)?(\d+)?([*\/])?(\d+)?([+-])?(\d+)?$/);
+        if (!match) {
+            throw "Invalid dice notation: " + this._diceExpr;
+        }
+        var multdivide = (typeof match[5] == 'undefined') ? '*' : match[5];
+        this._multiplier = (typeof match[6] == 'undefined') ? 1 : parseInt(match[6]);
+        var addminus = (typeof match[7] == 'undefined') ? '+' : match[7];
+        this._modifier = (typeof match[8] == 'undefined') ? 0 : parseInt(match[8]);
+        this._finalResult = this._rollResults.reduce(function (a, b) { return a + b; }, 0);
+        this._finalResult = eval(this._finalResult + multdivide + this._multiplier);
+        this._finalResult = eval(this._finalResult + addminus + this._modifier);
     };
     return Dice;
 }());
@@ -177,6 +180,7 @@ function getAllIndexes(arr, val) {
     }
     return indexes;
 }
-var diceRolled = new Dice('4d4e');
+var diceRolled = new Dice('4d6kh3');
 console.log(diceRolled.rollResult);
+console.log(diceRolled.finalResult);
 console.log("");
